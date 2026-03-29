@@ -1,0 +1,90 @@
+name: Evaluation Quality Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "data/golden_dataset.json"
+
+jobs:
+  evaluate:
+    name: RAGAS Evaluation
+    runs-on: ubuntu-latest
+    services:
+      weaviate:
+        image: semitechnologies/weaviate:1.27.6
+        ports:
+          - 8080:8080
+          - 50051:50051
+        env:
+          QUERY_DEFAULTS_LIMIT: 25
+          AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+          PERSISTENCE_DATA_PATH: /var/lib/weaviate
+          DEFAULT_VECTORIZER_MODULE: none
+          CLUSTER_HOSTNAME: node1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Install Ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+
+      - name: Pull embedding model
+        run: ollama pull nomic-embed-text
+
+      - name: Ingest test documents
+        env:
+          WEAVIATE_URL: http://localhost:8080
+          OLLAMA_BASE_URL: http://localhost:11434
+          OLLAMA_EMBED_MODEL: nomic-embed-text
+        run: python -m src.ingestion.loader --dir data/documents
+
+      - name: Run RAGAS evaluation
+        env:
+          WEAVIATE_URL: http://localhost:8080
+          OLLAMA_BASE_URL: http://localhost:11434
+          OLLAMA_EMBED_MODEL: nomic-embed-text
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: claude-sonnet-4-6
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+        run: python -m src.evaluation.evaluator --dataset data/golden_dataset.json --output eval-results.json
+
+      - name: Check quality thresholds
+        run: |
+          python -c "
+          import json, sys
+          results = json.load(open('eval-results.json'))
+          thresholds = {
+              'faithfulness': 0.8,
+              'answer_relevancy': 0.7,
+              'context_precision': 0.7,
+          }
+          failed = False
+          for metric, threshold in thresholds.items():
+              score = results.get(metric, 0)
+              status = 'PASS' if score >= threshold else 'FAIL'
+              print(f'{metric}: {score:.3f} (threshold: {threshold}) [{status}]')
+              if score < threshold:
+                  failed = True
+          if failed:
+              print('\nQuality gate FAILED. Fix retrieval/generation before merging.')
+              sys.exit(1)
+          print('\nAll quality gates passed.')
+          "
+
+      - name: Upload evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval-results.json

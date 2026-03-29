@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-app-config
+  namespace: rag-app
+data:
+  WEAVIATE_URL: "http://weaviate:8080"
+  OLLAMA_BASE_URL: "http://ollama:11434"
+  OLLAMA_EMBED_MODEL: "nomic-embed-text"
+  ANTHROPIC_MODEL: "claude-sonnet-4-6"
+  CHUNK_SIZE: "600"
+  CHUNK_OVERLAP: "100"
+  HYBRID_ALPHA: "0.5"
+  RETRIEVAL_TOP_K: "20"
+  RERANK_TOP_N: "5"
+  EVAL_FAITHFULNESS_THRESHOLD: "0.8"
+  EVAL_RELEVANCY_THRESHOLD: "0.7"
+  EVAL_PRECISION_THRESHOLD: "0.7"

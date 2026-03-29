@@ -1,0 +1,16 @@
+.git
+.github
+.claude
+.idea
+.specify
+.env
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+docs
+specs
+*.md
+!requirements.txt
