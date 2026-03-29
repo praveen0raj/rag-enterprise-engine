@@ -84,8 +84,16 @@ Use AskUserQuestion to select how to specify the review target:
             - "Yes" → Create section and record
             - "No" → Do nothing (don't ask again)
         - When recording, transcribe all options and selected options as-is, don't insert divider lines (---) between questions
-    3. Run review again
-    4. Repeat from Step 2 until no additional questions remain
+    3. **Shift-left: Review → PRD / Epics / Architecture**
+        - If the review reveals gaps or contradictions in upstream documents (`docs/product-requirements-document.md`, `docs/epics.md`, `docs/system-architecture.md`):
+            1. List each gap with the upstream document and section affected
+            2. Propose specific updates
+            3. Use AskUserQuestion: "Review revealed upstream document gaps. Apply fixes?"
+                - "Yes, apply all" → Update upstream documents, note in Q&A
+                - "Let me review each" → Present one by one
+                - "Skip" → Note as unresolved items in requirements analysis
+    4. Run review again
+    5. Repeat from Step 2 until no additional questions remain
 
 ### 5. Review Complete
 

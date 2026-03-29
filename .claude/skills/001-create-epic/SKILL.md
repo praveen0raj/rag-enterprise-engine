@@ -70,6 +70,21 @@ Launch `pdm-backlog-strategist` as a subagent (Agent tool):
 - Request PBI candidate decomposition and relative estimation (Fibonacci scale)
 - Naming convention: `e{NNN}-{NNN}_{english-name}/`
 
+**Shift-left: PBI Decomposition → PRD / Epics**
+
+After decomposition, check if upstream documents have gaps:
+- Are there PRD requirements too vague to assign to a single PBI?
+- Did decomposition reveal missing requirements (e.g., shared infrastructure, configuration)?
+- Does `docs/epics.md` need updating to reflect new findings?
+
+If gaps are found:
+1. List each gap with the upstream document and section affected
+2. Propose specific text updates
+3. Use AskUserQuestion: "PBI decomposition revealed upstream gaps. Apply updates?"
+   - "Yes, apply all" → Update PRD/epics, note changes in Q&A file
+   - "Let me review each" → Present one by one for approval
+   - "Skip" → Note as unresolved items in requirements analysis
+
 ### 7. PBI List Approval
 
 1. Present PBI candidates to the user in table format (name, summary, estimate, priority)
@@ -93,6 +108,15 @@ Record PBI list, estimates, and priorities in overview.md.
 Launch `pdm-consistency-checker` as a subagent (Agent tool):
 - Check consistency between the newly created EPIC and existing `stock/`
 - Report any findings to the user
+
+**Shift-left: Consistency → PRD / Architecture / Epics**
+
+If the consistency check reveals contradictions with `docs/product-requirements-document.md`, `docs/system-architecture.md`, or `docs/epics.md`:
+1. Present findings with specific document, section, and proposed fix
+2. Use AskUserQuestion: "Consistency check found upstream issues. Apply fixes?"
+   - "Yes, apply all" → Update upstream documents
+   - "Let me review each" → Present one by one
+   - "Skip" → Note as known issues in overview.md
 
 ### 10. Select Next Action
 
